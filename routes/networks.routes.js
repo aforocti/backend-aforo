@@ -1,14 +1,31 @@
+/**
+ * @swagger
+ * tags:
+ *  name: Networks
+ *  description: Operaciones para las redes.
+ */
+
 const { Router } = require('express')
 const router = Router();
 const admin = require('firebase');
 const db = admin.firestore();
 
+/**
+ * @swagger
+ * /api/networks:
+ *  post:
+ *      summary: Crear una red y genera un token de red. 
+ *      tags: [Networks] 
+ *      responses:
+ *          '200':
+ *              description: Se ha creado una nueva red.
+ *          '500':
+ *              description: Hubo un error al crear la red.
+ */
 router.post('/api/networks', async (req, res) => {
     generatedtoken = Math.random().toString(36).substr(2);
     (async () => {
         try {
-            
-            console.log("nombre:"+req.body.name);
             await db.collection('Networks').doc('/' + generatedtoken + '/').set({
                 name: req.body.name,
             })  
@@ -26,6 +43,18 @@ router.post('/api/networks', async (req, res) => {
     })();
 });
 
+/**
+ * @swagger
+ * /api/networks/:token:
+ *  get:
+ *      summary: Lee una red a partir de un token  
+ *      tags: [Networks] 
+ *      responses:
+ *          '200':
+ *              description: Se ha leido la informacion de la red correctamente.
+ *          '500':
+ *              description: Hubo un error al leer la informacion de la red.
+ */
 router.get('/api/networks/:token', (req, res) => {
     (async () => {
         try {
@@ -45,6 +74,18 @@ router.get('/api/networks/:token', (req, res) => {
     })();
 });
 
+/**
+ * @swagger
+ * /api/networks:
+ *  get:
+ *      summary: Lee las redes guardadas. 
+ *      tags: [Networks] 
+ *      responses:
+ *          '200':
+ *              description: Se han leido las redes guardadas.
+ *          '500':
+ *              description: Hubo un error al leer las redes.
+ */
 router.get('/api/networks', (req, res) => {
     (async () => {
         try {
