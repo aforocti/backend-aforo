@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const config = require('./config');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUI = require('swagger-ui-express');
+const functions = require('firebase-functions');
 
 const app = express();
 
@@ -38,10 +39,11 @@ admin.initializeApp(config.firebaseConfig);
 var newData;
 
 // push notifications application
-/*exports.messageTrigger = functions.firestore.document('Alerts/{alertId}').onCreate(async (snapshot, context) => {
+exports.messageTrigger = functions.firestore.document('Alerts/{alertId}').onCreate(async (snapshot, context) => {
     if(snapshot.empty) {
         return;
     }
+    console.log("notify!");
     var tokens = [];
     newData = snapshot.data();
 
@@ -70,7 +72,7 @@ var newData;
     } catch (error) {
         console.log(error)
     }
-});*/
+});
 
 app.use(require('./routes/networks.routes'))
 app.use(require('./routes/wlcs.routes'))

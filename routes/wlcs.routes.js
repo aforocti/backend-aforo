@@ -24,6 +24,7 @@ const db = admin.firestore();
 router.post('/api/wlcs', (req, res) => {
     (async () => {
         try {
+            console.log(req.body)
             await db
                 .collection('Wlcs').doc('/' + req.body.mac + '/')
                 .set({
