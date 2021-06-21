@@ -23,7 +23,7 @@ const swaggerOptions = {
             version: '1.0.0'
         },
         servers: [{
-            url: 'https://git.heroku.com/backend-aforo.git',
+            url: 'https://backend-aforo.herokuapp.com',
             description: 'Production Server'
         },{
             url: 'http://localhost:3000',
