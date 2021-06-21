@@ -1,7 +1,7 @@
 {
-  "name": "Backend",
+  "name": "BackendAforo",
   "version": "1.0.0",
-  "description": "",
+  "description": "Backend para la aplicacion de aforo.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -19,6 +19,7 @@
     "firebase": "^8.6.7",
     "firebase-admin": "^9.9.0",
     "firebase-functions": "^3.14.1",
+    "openapi-types": "^9.0.3",
     "swagger-jsdoc": "^6.1.0",
     "swagger-ui-express": "^4.1.6"
   },

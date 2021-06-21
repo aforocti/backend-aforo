@@ -8,6 +8,7 @@ const { Router } = require('express')
 const router = Router();
 const admin = require('firebase');
 const db = admin.firestore();
+const apsController = require('../controllers/aps.controller.js');
 
 /**
  * @swagger
@@ -63,6 +64,83 @@ const db = admin.firestore();
 /**
  * @swagger
  * /api/aps:
+ *  get:
+ *      summary: Lee todos los Access Point de la base.
+ *      tags: [Aps]
+ *      responses:
+ *          '200':
+ *              description: Se han leido todos los Access Points exitosamente.
+ *          '500':
+ *              description: Existió leyendo los Access Points.
+ */
+ router.get('/api/aps', apsController.findAll);
+
+ /**
+  * @swagger
+  * /api/aps/{ap_id}:
+  *  get:
+  *      summary: Lee la informacion de un Access Point especifico, a partir de su id.
+  *      tags: [Aps]
+  *      parameters:
+  *            - in: path
+  *              name: ap_id
+  *              schema:
+  *                  type: string
+  *              required: true
+  *              description: Id del Access Point.
+  *      responses:
+  *          '200':
+  *              description: Se ha leido el Access Point exitosamente.
+  *          '500':
+  *              description: Existió un al leer la informacion del Access Point.
+  */
+ router.get('/api/aps/:ap_id', apsController.findOne);
+ 
+ /**
+  * @swagger
+  * /api/wlc/{wlc_id}/aps:
+  *  get:
+  *      summary: Lee todos los Access Point conectados a un Wireless Controller a partir del id del WLC.
+  *      tags: [Aps]
+  *      parameters:
+  *            - in: path
+  *              name: wlc_id
+  *              schema:
+  *                  type: string
+  *              required: true
+  *              description: Id del Wireless Controller.
+  *      responses:
+  *          '200':
+  *              description: Se han leido los Access Points exitosamente.
+  *          '500':
+  *              description: Existió un al leer los Access Points.
+  */
+ router.get('/api/wlc/:wlc_id/aps', apsController.findByAp);
+ 
+ /**
+  * @swagger
+  * /api/network/{network_id}/aps:
+  *  get:
+  *      summary: Lee todos los Access Point conectados a una red a partir del id de la red.
+  *      tags: [Aps]
+  *      parameters:
+  *            - in: path
+  *              name: network_id
+  *              schema:
+  *                  type: string
+  *              required: true
+  *              description: Id de la red.
+  *      responses:
+  *          '200':
+  *              description: Se han leido los Access Points exitosamente.
+  *          '500':
+  *              description: Existió un al leer los Access Points.
+  */
+ router.get('/api/network/:network_id/aps', apsController.findByNetwork);
+
+ /**
+ * @swagger
+ * /api/aps:
  *  post:
  *      summary: Crear un nuevo Access Point en la base.
  *      tags: [Aps]
@@ -78,231 +156,7 @@ const db = admin.firestore();
  *          '500':
  *              description: Existió un error eliminando la alerta.
  */
-router.post('/api/aps', (req, res) => {
-    (async () => {
-        try {
-            await db
-                .collection('Aps').doc('/' + req.body.mac + '/')
-                .set({
-                    wlc_id  : req.body.wlc_id,
-                    network_id : req.body.network_id,
-                    name    : req.body.name,
-                    model   : req.body.model,
-                    piso    : '0',
-                    devices : '0',
-                    limit   : '10',
-                    dx      : '0',
-                    dy      : '0',
-                    active  : '0'
-                })
-            return res.status(200).json();
-        } catch (error) {
-            console.log(error);
-            return res.status(500).send(error)
-        }
-    })();
-});
-
-/**
- * @swagger
- * /api/aps:
- *  get:
- *      summary: Lee todos los Access Point de la base.
- *      tags: [Aps]
- *      responses:
- *          '200':
- *              description: Se han leido todos los Access Points exitosamente.
- *          '500':
- *              description: Existió leyendo los Access Points.
- */
-router.get('/api/aps', (req, res) => {
-    (async () => {
-        try {
-            const query = db.collection('Aps');
-            const querySnapshot = await query.get();
-            const docs = querySnapshot.docs;
-            const response = docs.map(doc => ({
-                mac        : doc.id,
-                network_id : doc.data().network_id,
-                wlc_id     : doc.data().wlc_id,
-                model      : doc.data().model,
-                name       : doc.data().name,
-                piso       : doc.data().piso,
-                devices    : doc.data().devices,
-                limit      : doc.data().limit,
-                dx         : doc.data().dx,
-                dy         : doc.data().dy,
-                active     : doc.data().active
-            }))
-            return res.status(200).json(response);   
-        } catch (error) {
-            console.log(error);
-            return res.status(500).send(error)
-        }
-    })();
-});
-
-/**
- * @swagger
- * /api/aps/{ap_id}:
- *  get:
- *      summary: Lee la informacion de un Access Point especifico, a partir de su id.
- *      tags: [Aps]
- *      parameters:
- *            - in: path
- *              name: ap_id
- *              schema:
- *                  type: string
- *              required: true
- *              description: Id del Access Point.
- *      responses:
- *          '200':
- *              description: Se ha leido el Access Point exitosamente.
- *          '500':
- *              description: Existió un al leer la informacion del Access Point.
- */
-router.get('/api/aps/:ap_id', (req, res) => {
-    (async () => {
-        try {
-            const doc = db.collection('Aps').doc(req.params.ap_id);
-            const item = await doc.get();
-            const response = item.data();
-            const exists = response !== undefined;
-            return res.status(exists ? 200 : 400).json({
-                success: exists,
-                data: exists ? response : "not found"
-            })
-        } catch (error) {
-            console.log(error);
-            return res.status(500).send(error)
-        }
-    })();
-});
-
-/**
- * @swagger
- * /api/wlc/{wlc_id}/aps:
- *  get:
- *      summary: Lee todos los Access Point conectados a un Wireless Controller a partir del id del WLC.
- *      tags: [Aps]
- *      parameters:
- *            - in: path
- *              name: wlc_id
- *              schema:
- *                  type: string
- *              required: true
- *              description: Id del Wireless Controller.
- *      responses:
- *          '200':
- *              description: Se han leido los Access Points exitosamente.
- *          '500':
- *              description: Existió un al leer los Access Points.
- */
-router.get('/api/wlc/:wlc_id/aps', (req, res) => {
-    (async () => {
-        try {
-            const query = db.collection('Aps').where("wlc_id", "==", req.params.wlc_id);
-            const querySnapshot = await query.get();
-            const docs = querySnapshot.docs;
-            const response = docs.map(doc => ({
-                mac        : doc.id,
-                wlc_id     : doc.data().wlc_id,
-                network_id : doc.data().network_id,
-                model      : doc.data().model,
-                name       : doc.data().name,
-                piso       : doc.data().piso,
-                devices    : doc.data().devices,
-                limit      : doc.data().limit,
-                dx         : doc.data().dx,
-                dy         : doc.data().dy,
-                active     : doc.data().active
-            }))
-            return res.status(200).json(response);
-        } catch (error) {
-            console.log(error);
-            return res.status(500).send(error)
-        }
-    })();
-});
-
-/**
- * @swagger
- * /api/network/{network_id}/aps:
- *  get:
- *      summary: Lee todos los Access Point conectados a una red a partir del id de la red.
- *      tags: [Aps]
- *      parameters:
- *            - in: path
- *              name: network_id
- *              schema:
- *                  type: string
- *              required: true
- *              description: Id de la red.
- *      responses:
- *          '200':
- *              description: Se han leido los Access Points exitosamente.
- *          '500':
- *              description: Existió un al leer los Access Points.
- */
-router.get('/api/network/:network_id/aps', (req, res) => {
-    (async () => {
-        try {
-            const query = db.collection('Aps').where("network_id", "==", req.params.network_id);
-            const querySnapshot = await query.get();
-            const docs = querySnapshot.docs;
-            const response = docs.map(doc => ({
-                mac        : doc.id,
-                wlc_id     : doc.data().wlc_id,
-                network_id : doc.data().network_id,
-                model      : doc.data().model,
-                name       : doc.data().name,
-                piso       : doc.data().piso,
-                devices    : doc.data().devices,
-                limit      : doc.data().limit,
-                dx         : doc.data().dx,
-                dy         : doc.data().dy,
-                active     : doc.data().active
-            }))
-            return res.status(200).json(response);
-        } catch (error) {
-            console.log(error);
-            return res.status(500).send(error)
-        }
-    })();
-});
-
-
-/**
- * @swagger
- * /api/aps/{mac}:
- *  delete:
- *      summary: Elimina un Access Point a partir de su Mac Adress.
- *      tags: [Aps]
- *      parameters:
- *            - in: path
- *              name: mac
- *              schema:
- *                  type: string
- *              required: true
- *              description: Mac Adress del Access Point.
- *      responses:
- *          '200':
- *              description: Se ha eliminado el Access Point correctamente.
- *          '500':
- *              description: Existió un al eliminar el Access Point.
- */
-router.delete('/api/aps/:mac', (req, res) => {
-    (async () => {
-        try {
-            const doc = db.collection('Aps').doc(req.params.mac);
-            await doc.delete();
-            return res.status(200).json();
-        } catch (error) {
-            console.log(error);
-            return res.status(500).send(error)
-        }
-    })();
-});
+router.post('/api/aps', apsController.create);
 
 /**
  * @swagger
@@ -323,21 +177,7 @@ router.delete('/api/aps/:mac', (req, res) => {
  *          '500':
  *              description: Existió un problema al actualizar la información del Access Point.
  */
-router.put('/api/aps/:mac/model/name', (req, res) => {
-    (async () => {
-        try {
-            const doc = db.collection('Aps').doc(req.params.mac);
-            await doc.update({
-                model: req.body.model,
-                name : req.body.name
-            });
-            return res.status(200).json();
-        } catch (error) {
-            console.log(error);
-            return res.status(500).send(error)
-        }
-    })();
-});
+router.put('/api/aps/:mac/model/name', apsController.updateModelName);
 
 /**
  * @swagger
@@ -358,21 +198,7 @@ router.put('/api/aps/:mac/model/name', (req, res) => {
  *          '500':
  *              description: Existió un problema al actualizar la información del Access Point.
  */
-router.put('/api/aps/:mac/limit/piso', (req, res) => {
-    (async () => {
-        try {
-            const doc = db.collection('Aps').doc(req.params.mac);
-            await doc.update({
-                limit : req.body.limit,
-                piso  : req.body.piso
-            });
-            return res.status(200).json();
-        } catch (error) {
-            console.log(error);
-            return res.status(500).send(error)
-        }
-    })();
-});
+router.put('/api/aps/:mac/limit/piso', apsController.updateLimitPiso);
 
 /**
  * @swagger
@@ -393,20 +219,7 @@ router.put('/api/aps/:mac/limit/piso', (req, res) => {
  *          '500':
  *              description: Existió un problema al actualizar los dispositivos del Access Point.
  */
-router.put('/api/aps/:mac/devices', (req, res) => {
-    (async () => {
-        try {
-            const doc = db.collection('Aps').doc(req.params.mac);
-            await doc.update({
-                devices: req.body.devices,
-            });
-            return res.status(200).json();
-        } catch (error) {
-            console.log(error);
-            return res.status(500).send(error)
-        }
-    })();
-});
+router.put('/api/aps/:mac/devices', apsController.updateDevices);
 
 /**
  * @swagger
@@ -427,22 +240,7 @@ router.put('/api/aps/:mac/devices', (req, res) => {
  *          '500':
  *              description: Existió un problema al actualizar la posición del Access Point.
  */
-router.put('/api/aps/:mac/dxdy', (req, res) => {
-    (async () => {
-        try {
-            const doc = db.collection('Aps').doc(req.params.mac);
-            await doc.update({
-                dx: req.body.dx,
-                dy: req.body.dy,
-                
-            });
-            return res.status(200).json();
-        } catch (error) {
-            console.log(error);
-            return res.status(500).send(error)
-        }
-    })();
-});
+router.put('/api/aps/:mac/dxdy', apsController.updateLocation);
 
 /**
  * @swagger
@@ -463,19 +261,27 @@ router.put('/api/aps/:mac/dxdy', (req, res) => {
  *          '500':
  *              description: Existió un problema al actualizar la posición del Access Point.
  */
-router.put('/api/aps/:mac/active', (req, res) => {
-    (async () => {
-        try {
-            const doc = db.collection('Aps').doc(req.params.mac);
-            await doc.update({
-                active: req.body.active,
-            });
-            return res.status(200).json();
-        } catch (error) {
-            console.log(error);
-            return res.status(500).send(error)
-        }
-    })();
-});
+router.put('/api/aps/:mac/active', apsController.updateActive);
+
+/**
+ * @swagger
+ * /api/aps/{mac}:
+ *  delete:
+ *      summary: Elimina un Access Point a partir de su Mac Adress.
+ *      tags: [Aps]
+ *      parameters:
+ *            - in: path
+ *              name: mac
+ *              schema:
+ *                  type: string
+ *              required: true
+ *              description: Mac Adress del Access Point.
+ *      responses:
+ *          '200':
+ *              description: Se ha eliminado el Access Point correctamente.
+ *          '500':
+ *              description: Existió un al eliminar el Access Point.
+ */
+ router.delete('/api/aps/:mac', apsController.delete);
 
 module.exports = router

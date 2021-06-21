@@ -8,6 +8,25 @@ const { Router } = require('express')
 const router = Router();
 const admin = require('firebase');
 const db = admin.firestore();
+const wlcsController = require('../controllers/wlcs.controller.js');
+
+/**
+ * @swagger
+ * components:
+ *  schemas:
+ *      wlc:
+ *          type: object
+ *          properties:
+ *              manufacter_name:
+ *                  type: string
+ *                  description: Nombre del proveedor.
+ *              network_id:
+ *                  type: string
+ *                  description: Id de la red.
+ *              product_name:
+ *                  type: string
+ *                  description: Nombre del producto.
+ */
 
 /**
  * @swagger
@@ -15,30 +34,19 @@ const db = admin.firestore();
  *  post:
  *      summary: Se crea un nuevo Wireless Controller en una red.
  *      tags: [Wlcs]
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/wlc'
  *      responses:
  *          '200':
  *              description: Se han creado un nuevo Wireless Controller en la red.
  *          '500':
  *              description: Hubo un error al crear un nuevo Wireless Controller en la red.
  */
-router.post('/api/wlcs', (req, res) => {
-    (async () => {
-        try {
-            console.log(req.body)
-            await db
-                .collection('Wlcs').doc('/' + req.body.mac + '/')
-                .set({
-                    manufacturer_name: req.body.manufacturer_name,
-                    network_id:        req.body.network_id,
-                    product_name:      req.body.product_name
-                })
-            return res.status(200).json();
-        } catch (error) {
-            console.log(error);
-            return res.status(500).send(error)
-        }
-    })();
-});
+router.post('/api/wlcs', wlcsController.create);
 
 /**
  * @swagger
@@ -52,25 +60,7 @@ router.post('/api/wlcs', (req, res) => {
  *          '500':
  *              description: Hubo un error al leer los Wireless Controllers del sistema.
  */
-router.get('/api/wlcs', (req, res) => {
-    (async () => {
-        try {
-            const query = db.collection('Wlcs');
-            const querySnapshot = await query.get();
-            const docs = querySnapshot.docs;
-            const response = docs.map(doc => ({
-                mac:               doc.id,
-                network_id:        doc.data().network_id,
-                manufacturer_name: doc.data().manufacturer_name,
-                product_name:      doc.data().product_name
-            }))
-            return res.status(200).json(response);   
-        } catch (error) {
-            console.log(error);
-            return res.status(500).send(error)
-        }
-    })();
-});
+router.get('/api/wlcs', wlcsController.findAll);
 
 /**
  * @swagger
@@ -84,25 +74,7 @@ router.get('/api/wlcs', (req, res) => {
  *          '500':
  *              description: Hubo un error al leer los Wireless Controllers de la red.
  */
-router.get('/api/network/:network_id/wlcs', (req, res) => {
-    (async () => {
-        try {
-            const query = db.collection('Wlcs').where("network_id", "==", req.params.network_id);
-            const querySnapshot = await query.get();
-            const docs = querySnapshot.docs;
-            const response = docs.map(doc => ({
-                mac:               doc.id,
-                network_id:        doc.data().network_id,
-                manufacturer_name: doc.data().manufacturer_name,
-                product_name:      doc.data().product_name
-            }))
-            return res.status(200).json(response);
-        } catch (error) {
-            console.log(error);
-            return res.status(500).send(error)
-        }
-    })();
-});
+router.get('/api/network/:network_id/wlcs', wlcsController.findByNetwork);
 
 /**
  * @swagger
@@ -116,23 +88,7 @@ router.get('/api/network/:network_id/wlcs', (req, res) => {
  *          '500':
  *              description: Hubo un error al leer la informacion del wlc.
  */
-router.get('/api/wlc/:wlc_id', (req, res) => {
-    (async () => {
-        try {
-            const doc = db.collection('Wlcs').doc(req.params.wlc_id);
-            const item = await doc.get();
-            const response = item.data();
-            const exists = response !== undefined;
-            return res.status(exists ? 200 : 400).json({
-                success: exists,
-                data: exists ? response : "not found"
-            })
-        } catch (error) {
-            console.log(error);
-            return res.status(500).send(error)
-        }
-    })();
-});
+router.get('/api/wlc/:wlc_id', wlcsController.findOne);
 
 /**
  * @swagger
@@ -146,18 +102,7 @@ router.get('/api/wlc/:wlc_id', (req, res) => {
  *          '500':
  *              description: Hubo un error al eliminar el wireless controller.
  */
-router.delete('/api/wlcs/:mac', (req, res) => {
-    (async () => {
-        try {
-            const doc = db.collection('Wlcs').doc(req.params.mac);
-            await doc.delete();
-            return res.status(200).json();
-        } catch (error) {
-            console.log(error);
-            return res.status(500).send(error)
-        }
-    })();
-});
+router.delete('/api/wlcs/:mac', wlcsController.delete);
 
 /**
  * @swagger
@@ -165,26 +110,25 @@ router.delete('/api/wlcs/:mac', (req, res) => {
  *  update:
  *      summary: Se actualiza la informacion de un wlc.
  *      tags: [Wlcs]
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          manufacter_name:
+ *                              type: string
+ *                              description: Nombre del proveedor.
+ *                          product_name:
+ *                              type: string
+ *                              description: Nombre del producto.
  *      responses:
  *          '200':
  *              description: Se ha actualizado la informacion del wlc correctamente.
  *          '500':
  *              description: Hubo un error al actualizar la informacion del wlc.
  */
-router.put('/api/wlcs/:mac', (req, res) => {
-    (async () => {
-        try {
-            const doc = db.collection('Wlcs').doc(req.params.mac);
-            await doc.update({
-                manufacturer_name: req.body.manufacturer_name,
-                product_name:      req.body.product_name
-            });
-            return res.status(200).json();
-        } catch (error) {
-            console.log(error);
-            return res.status(500).send(error)
-        }
-    })();
-});
+router.put('/api/wlcs/:mac', wlcsController.update);
 
 module.exports = router
