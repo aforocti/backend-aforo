@@ -3,16 +3,18 @@ const db = admin.firestore();
 
 exports.create = async (req, res) => {
     (async () => {
+        alerta = {
+            network_id: req.body.network_id,
+            area: req.body.area,
+            hour: req.body.hour,
+            date: req.body.date,
+            device_number: req.body.device_number
+        };
         try {
             await db
                 .collection('Alerts').doc()
-                .set({
-                    network_id: req.body.network_id,
-                    area: req.body.area,
-                    hour: req.body.hour,
-                    date: req.body.date,
-                    device_number: req.body.device_number
-                })
+                .set(alerta);
+            sendAlert(alerta);
             return res.status(200).json();
         } catch (error) {
             console.log(error);
@@ -42,7 +44,7 @@ exports.findAll = (req, res) => {
     })();
 };
 
-exports.delete =  (req, res) => {
+exports.delete = (req, res) => {
     (async () => {
         try {
             const doc = db.collection('Networks').doc(req.body.network_id)
@@ -73,3 +75,38 @@ exports.update = (req, res) => {
         }
     })();
 };
+
+
+sendAlert = (alerta) => {
+    if (snapshot.empty) {
+        return;
+    }
+    console.log("notify!");
+    var tokens = [];
+
+    const deviceTokens = await admin
+        .firestore()
+        .collection('Devices')
+        .where("network_id", "==", alerta.network_id)
+        .get();
+
+    for (var token of deviceTokens.docs) {
+        tokens.push(token.data().device_token);
+    }
+    var payload = {
+        notification: {
+            title: 'Alerta!',
+            body: `Se ha detectado aglomeración en ${alerta.area}`,
+            sound: 'default'
+        },
+        data: {
+            click_action: 'FLUTTER_NOTIFICATION_CLICK',
+            message: `area: ${alerta.area}, hour: ${alerta.hour}, date: ${alerta.date}, device_number: ${alerta.device_number}`
+        }
+    }
+    try {
+        const response = await admin.messaging().sendToDevice(tokens, payload);
+    } catch (error) {
+        console.log(error)
+    }
+}
