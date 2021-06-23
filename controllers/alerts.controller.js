@@ -1,4 +1,5 @@
 const admin = require('firebase');
+const fetch = require('node-fetch')
 const db = admin.firestore();
 
 exports.create = async (req, res) => {
@@ -78,11 +79,7 @@ exports.update = (req, res) => {
 
 
 sendAlert = async (alerta) => {
-    if (snapshot.empty) {
-        return;
-    }
-    console.log("notify!");
-    var tokens = [];
+    var regTokens = [];
 
     const deviceTokens = await admin
         .firestore()
@@ -91,7 +88,7 @@ sendAlert = async (alerta) => {
         .get();
 
     for (var token of deviceTokens.docs) {
-        tokens.push(token.data().device_token);
+        regTokens.push(token.data().device_token);
     }
     var payload = {
         notification: {
@@ -102,10 +99,22 @@ sendAlert = async (alerta) => {
         data: {
             click_action: 'FLUTTER_NOTIFICATION_CLICK',
             message: `area: ${alerta.area}, hour: ${alerta.hour}, date: ${alerta.date}, device_number: ${alerta.device_number}`
-        }
+        },
+        registration_ids: regTokens
     }
     try {
-        const response = await admin.messaging().sendToDevice(tokens, payload);
+        fetch('https://fcm.googleapis.com/fcm/send', {
+            'method': 'POST',
+            'headers': {
+                'Authorization': 'key=' + 'AAAAUWDjsbo:APA91bEcfnfywZDzahLOMtt5Sx-5f8SPHnbxFhMDxdzWSbOK9qRAd6ilz75tYYRaj6hDGooUs0Hj3rLnwwOxZkKLFv9aWY3utR1Fhop4YVk-Zg4ijjUMrLw4WgbNs15-c_HxaIIL2DBm',
+                'Content-Type':'application/json'
+            },
+            'body':JSON.stringify(payload)
+        }).then (()=>{
+            console.log("sended!")
+        }).catch((err)=>{
+            console.log(err);
+        })
     } catch (error) {
         console.log(error)
     }
