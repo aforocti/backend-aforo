@@ -77,7 +77,7 @@ exports.update = (req, res) => {
 };
 
 
-sendAlert = (alerta) => {
+sendAlert = async (alerta) => {
     if (snapshot.empty) {
         return;
     }
