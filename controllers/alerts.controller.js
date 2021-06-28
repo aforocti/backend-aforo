@@ -3,11 +3,14 @@ const fetch = require('node-fetch')
 const db = admin.firestore();
 
 exports.create = async (req, res) => {
+    today = new Date()
+    time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() ;
     (async () => {
         alerta = {
             network_id: req.body.network_id,
             area: req.body.area,
             hour: req.body.hour,
+            serverhour: time,
             date: req.body.date,
             device_number: req.body.device_number
         };
