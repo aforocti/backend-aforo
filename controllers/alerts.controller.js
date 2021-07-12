@@ -4,7 +4,8 @@ const db = admin.firestore();
 
 exports.create = async (req, res) => {
     today = new Date()
-    time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() ;
+    time = today.getHours() + ":" + today.getMinutes() 
+            + ":" + today.getSeconds() ;
     (async () => {
         alerta = {
             network_id: req.body.network_id,
