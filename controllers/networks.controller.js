@@ -7,12 +7,14 @@ exports.create = async (req, res) => {
         try {
             await db.collection('Networks').doc('/' + generatedtoken + '/').set({
                 name: req.body.name,
+                capacity: req.body.capacity
             })  
             const doc = db.collection('Networks').doc(generatedtoken);
             const item = await doc.get();
             const response = {
                 id: item.id, 
-                name: item.data().name
+                name: item.data().name,
+                capacity: item.data().capacity
             }
             return res.status(200).json(response);
         } catch (error) {
@@ -50,6 +52,7 @@ exports.findAll = (req, res) => {
             const response = docs.map(doc => ({
                 id: doc.id,
                 name: doc.data().name,
+                capacity: doc.data().capacity
             }))
             return res.status(200).json(response);
         } catch (error) {
