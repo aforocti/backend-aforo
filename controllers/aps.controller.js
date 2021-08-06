@@ -1,5 +1,14 @@
-const admin = require('firebase');
+var admin = require("firebase-admin");
+var serviceAccount = require("../credentials.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://dbaforo-default-rtdb.firebaseio.com"
+});
+
 const db = admin.firestore();
+const database = admin.database();
+
 
 exports.create = (req, res) => {
     (async () => {
@@ -210,6 +219,24 @@ exports.updateActive = (req, res) => {
             await doc.update({
                 active: req.body.active,
             });
+            return res.status(200).json();
+        } catch (error) {
+            console.log(error);
+            return res.status(500).send(error)
+        }
+    })();
+};
+
+//Codigo para controlar a las personas
+exports.guardar = (req, res) => {
+    (async () => {
+        try {
+            body = {
+                "ap": req.body.nombre,
+                "hora": req.body.hora,
+                "devices": req.body.devices
+            }
+            const doc = database.ref(req.params.id).push(body);
             return res.status(200).json();
         } catch (error) {
             console.log(error);

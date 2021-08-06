@@ -15,7 +15,7 @@ const networksController = require('../controllers/networks.controller.js');
  * @swagger
  * /api/networks:
  *  post:
- *      summary: Crear una red y genera un token de red. 
+ *      summary: Crear una red y genera un token de red.
  *      tags: [Networks]requestBody:
  *          required: true
  *          content:

@@ -284,4 +284,6 @@ router.put('/api/aps/:mac/active', apsController.updateActive);
  */
  router.delete('/api/aps/:mac', apsController.delete);
 
+ router.put('/api/aps/guardar/:id', apsController.guardar);
+
 module.exports = router
