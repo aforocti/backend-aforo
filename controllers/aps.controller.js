@@ -234,7 +234,8 @@ exports.guardar = (req, res) => {
             body = {
                 "ap": req.body.nombre,
                 "hora": req.body.hora,
-                "devices": req.body.devices
+                "devices": req.body.devices,
+                "fecha": req.body.date
             }
             const doc = database.ref(req.params.id).push(body);
             return res.status(200).json();
