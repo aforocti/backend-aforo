@@ -96,8 +96,8 @@ sendAlert = async (alerta) => {
     }
     var payload = {
         notification: {
-            title: 'Alerta!',
-            body: `Se ha detectado aglomeración en ${alerta.area}`,
+            title: 'ALERT!', 
+            body: `A crowd of people has been detected at ${newData.area}`, 
             sound: 'default'
         },
         data: {
