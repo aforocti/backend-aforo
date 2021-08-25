@@ -61,8 +61,8 @@ exports.messageTrigger = functions.firestore.document('Alerts/{alertId}').onCrea
     }
     var payload = {
         notification: {
-            title: 'ALERT!', 
-            body: `A crowd of people has been detected at ${newData.area}`, 
+            title: 'Alerta!', 
+            body: `Se ha detectado aglomeración en ${newData.area}`, 
             sound: 'default'
         },
         data : {
