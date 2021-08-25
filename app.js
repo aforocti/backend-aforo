@@ -41,6 +41,42 @@ admin.initializeApp(config.firebaseConfig);
 
 var newData;
 
+// push notifications application
+exports.messageTrigger = functions.firestore.document('Alerts/{alertId}').onCreate(async (snapshot, context) => {
+    if(snapshot.empty) {
+        return;
+    }
+    console.log("notify!");
+    var tokens = [];
+    newData = snapshot.data();
+
+    const deviceTokens = await admin
+        .firestore()
+        .collection('Devices')
+        .where("network_id", "==", newData.network_id)
+        .get();
+    
+    for(var token of deviceTokens.docs) {
+        tokens.push(token.data().device_token);
+    }
+    var payload = {
+        notification: {
+            title: 'ALERT!', 
+            body: `A crowd of people has been detected at ${newData.area}`, 
+            sound: 'default'
+        },
+        data : {
+            click_action: 'FLUTTER_NOTIFICATION_CLICK',
+            message: `area: ${newData.area}, hour: ${newData.hour}, date: ${newData.date}, device_number: ${newData.device_number}`
+        }
+    }
+    try {
+        const response = await admin.messaging().sendToDevice(tokens, payload);
+    } catch (error) {
+        console.log(error)
+    }
+});
+
 app.use(require('./routes/networks.routes'))
 app.use(require('./routes/wlcs.routes'))
 app.use(require('./routes/users.routes'))
