@@ -237,7 +237,7 @@ exports.guardar = (req, res) => {
                 "devices": req.body.devices,
                 "fecha": req.body.fecha
             }
-            const doc = database.ref(req.params.id).push(body);
+            const doc = database.ref().push(body);
             return res.status(200).json();
         } catch (error) {
             console.log(error);
