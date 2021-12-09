@@ -16,7 +16,8 @@ const networksController = require('../controllers/networks.controller.js');
  * /api/networks:
  *  post:
  *      summary: Crear una red y genera un token de red.
- *      tags: [Networks]requestBody:
+ *      tags: [Networks]
+ *      requestBody:
  *          required: true
  *          content:
  *              application/json:
