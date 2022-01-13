@@ -7,8 +7,6 @@
 
 const { Router } = require('express')
 const router = Router();
-const admin = require('firebase');
-const db = admin.firestore();
 const alertsController = require("../controllers/alerts.controller.js")
 /**
  * @swagger

@@ -1,11 +1,19 @@
 const express = require('express');
-const admin = require('firebase');
+const admin = require('firebase-admin');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const config = require('./config');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUI = require('swagger-ui-express');
 const functions = require('firebase-functions');
+
+var serviceAccount = require("../certificate.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://dbaforo-default-rtdb.firebaseio.com"
+});
+
 
 const app = express();
 
@@ -37,7 +45,7 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs));
 
-admin.initializeApp(config.firebaseConfig);
+
 
 var newData;
 

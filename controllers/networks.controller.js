@@ -1,4 +1,6 @@
-const admin = require('firebase');
+
+const admin = require('firebase-admin');
+
 const db = admin.firestore();
 
 exports.create = async (req, res) => {

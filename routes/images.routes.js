@@ -6,8 +6,6 @@
  */
 const { Router } = require('express')
 const router = Router();
-const admin = require('firebase');
-const db = admin.firestore();
 const imagesController = require('../controllers/images.controller.js');
 
 /**
