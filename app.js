@@ -7,7 +7,7 @@ const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUI = require('swagger-ui-express');
 const functions = require('firebase-functions');
 
-var serviceAccount = require("../certificate.json");
+var serviceAccount = require("./certificate.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
